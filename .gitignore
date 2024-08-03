@@ -397,5 +397,5 @@ FodyWeavers.xsd
 # JetBrains Rider
 *.sln.iml
 
-./UrlShortener/appsettings.Development.json
+appsettings.Development.json
 Migrations
