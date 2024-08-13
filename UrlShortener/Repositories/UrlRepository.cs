@@ -19,9 +19,16 @@ namespace UrlShortener.Repositories
             await context.SaveChangesAsync();
         }
 
-        public async Task<IEnumerable<Url>> GetAllUrlsAsync()
+        public async Task<IEnumerable<Url>> GetAllUrlsAsync(int userId)
         {
-            return await context.Urls.ToListAsync();
+            return await context.Urls.Where(u => u.UserId == userId).ToListAsync();
+        }
+
+        public Task<Url> GetByShortUrlAsync(string shortUrl)
+        {
+            Url url = context.Urls.FirstOrDefaultAsync(u => u.ShortUrl == shortUrl).Result ?? throw new Exception("Url not found");
+
+            return Task.FromResult(url);
         }
 
         public async Task<Url> GetUrlAsync(int id)

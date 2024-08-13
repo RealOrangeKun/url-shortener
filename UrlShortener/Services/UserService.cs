@@ -22,9 +22,9 @@ namespace UrlShortener.Services
             return await repository.GetUserByIdAsync(id);
         }
 
-        public async Task<User> GetUserByUserNameAsync(string userName)
+        public User GetUserByUserNameAsync(string userName)
         {
-            return await repository.GetUserByUserNameAsync(userName);
+            return repository.GetUserByUserNameAsync(userName);
         }
 
         public async Task UpdateUserAsync(User user)

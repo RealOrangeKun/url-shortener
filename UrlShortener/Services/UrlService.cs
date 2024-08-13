@@ -19,9 +19,14 @@ namespace UrlShortener.Services
             await repository.DeleteUrlAsync(id);
         }
 
-        public async Task<IEnumerable<Url>> GetAllUrlsAsync()
+        public async Task<IEnumerable<Url>> GetAllUrlsAsync(int userId)
         {
-            return await repository.GetAllUrlsAsync();
+            return await repository.GetAllUrlsAsync(userId);
+        }
+
+        public Task<Url> GetByShortUrlAsync(string shortUrl)
+        {
+            return repository.GetByShortUrlAsync(shortUrl);
         }
 
         public async Task<Url> GetUrlByIdAsync(int id)
