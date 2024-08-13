@@ -11,7 +11,7 @@ namespace UrlShortener.Controllers
     [ApiController]
     [Authorize]
     [Route("")]
-    public class UrlController(IUrlService urlService, IUrlShortener Shortener, IUserService userService) : ControllerBase
+    public class UrlController(IUrlService urlService, IUrlShortener Shortener, IUserService userService, ILogger<UrlController> logger) : ControllerBase
     {
         [HttpPost]
         [Route("api/url")]
@@ -32,19 +32,22 @@ namespace UrlShortener.Controllers
                     Id = 0
                 };
                 await urlService.CreateUrlAsync(urlModel);
+                logger.LogInformation("A URL has been shortened: {url}", urlModel.OriginalUrl);
                 return Ok($"{Request.Scheme}://{Request.Host}/{urlModel.ShortUrl}");
             }
             catch (ArgumentException ex)
             {
+                logger.LogError(ex, "An ArgumentException occurred while shortening the URL: {url}", url["url"]);
                 return BadRequest(ex.Message);
             }
             catch (UnauthorizedAccessException ex)
             {
+                logger.LogError(ex, "An UnauthorizedAccessException occurred while shortening the URL: {url}", url["url"]);
                 return Unauthorized(ex.Message);
             }
             catch (Exception)
             {
-
+                logger.LogError("An exception occurred while shortening the URL: {url}", url["url"]);
                 return StatusCode(500, "Internal server error");
             }
         }
@@ -57,14 +60,17 @@ namespace UrlShortener.Controllers
             try
             {
                 Url url = await urlService.GetByShortUrlAsync(shortUrl) ?? throw new ObjectNotFoundException("Url not found");
+                logger.LogInformation("A URL has been redirected to: {url}", url.OriginalUrl);
                 return Redirect(url.OriginalUrl);
             }
             catch (ObjectNotFoundException ex)
             {
+                logger.LogError(ex, "An ObjectNotFoundException occurred while redirecting to the URL: {url}", shortUrl);
                 return NotFound(ex.Message);
             }
             catch (Exception)
             {
+                logger.LogError("An exception occurred while redirecting to the URL: {url}", shortUrl);
                 return StatusCode(500, "Internal server error");
             }
         }
@@ -77,14 +83,17 @@ namespace UrlShortener.Controllers
                 var userClaim = User.FindFirst(ClaimTypes.NameIdentifier);
                 int userId = int.Parse(userClaim?.Value ?? throw new UnauthorizedAccessException("Not authorized"));
                 var urls = await urlService.GetAllUrlsAsync(userId);
+                logger.LogInformation("User :{userId} has requested their urls", userId);
                 return Ok(urls);
             }
             catch (UnauthorizedAccessException ex)
             {
+                logger.LogError(ex, "An UnauthorizedAccessException occurred while getting the URL: {userId}", User.Identity?.Name);
                 return Unauthorized(ex.Message);
             }
             catch (Exception)
             {
+                logger.LogError("An exception occurred while getting the URL: {userId}", User.Identity?.Name);
                 return StatusCode(500, "Internal server error");
             }
         }
